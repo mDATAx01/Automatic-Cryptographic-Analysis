@@ -1,5 +1,6 @@
-import string, random, os
+import string, random
 from operator import itemgetter
+import freqs as fr
 
 #////////////////////CREATION ET OPERATIONS SUR LES CHROMOSOMES////////////////////
 def makeRandomChromo_dict():
@@ -83,11 +84,16 @@ def mutation(chromo_dict):
 
 
 def popFitness(population,calc_fitness,n):
-    #calcule la fitness de chaque chromosome dans la population
-    #Les resultats d'evaluation sont stockés avec l'index correspondant du chromosome dans 
-    #une liste (decroissante) de tuples: [ (evaluation, index), ... ]
-    populationScores = [ calc_fitness(population[i],n) for i in range(len(population)) ]
+    #print('\nFLAG popFitness IN')
+    
+    """
+    calcule la fitness de chaque chromosome dans la population
+    Les resultats d'evaluation sont stockés avec l'index correspondant du chromosome dans 
+    une liste (decroissante) de tuples: [ (evaluation, index), ... ]
+    """
+    populationScores = [ (calc_fitness(population[i],n),i) for i in range(len(population)) ]
     populationScores = sorted(populationScores, key=itemgetter(0), reverse = True) #itemgetter(0) pour trier / au 1er élément du tuple
+    #print('\n FLAG popFitness OUT')
     return populationScores
 
 

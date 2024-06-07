@@ -10,7 +10,7 @@ POP_SIZE = 20000
 
 
 
-def geneticAlgorithm(pop_size, elit_rate, cross_rate,mut_rate, calc_fitness,n, max_iterations):
+def geneticAlgorithm(pop_size, elit_rate, cross_rate,mut_rate, calc_fitness,n, max_iterations, taille_file, marge):
     #population initiale de chromosomes aleatoires
     population = [chromosome.makeRandomChromo_dict() for i in range(pop_size)]
     
@@ -20,31 +20,30 @@ def geneticAlgorithm(pop_size, elit_rate, cross_rate,mut_rate, calc_fitness,n, m
     ranksProbabilities = [((i + 1) / sum_r) for i in range(len(population))]
     ranksProbabilities = sorted(ranksProbabilities, reverse=True)
    
+    solution = []
+    file =  [0]
     # Boucle jusqu'à ce qu'une condition de fin soit atteinte
     i = 0
-
-    solution = []
-
-
     while i<max_iterations:
-        # fitness de la population
-        #liste decroissante de tuples: [ (evaluation, index), ... ]
-        populationScores = chromosome.popFitness(population, calc_fitness,n)
-        
-        # Verifie si l'un des chromosomes a atteint la solution
-        if populationScores[0][0] >= OBJECTIF:
-            print( chromosome.calc_fitness(population[populationScores[0][1]],n) )
+        print('\n \nIteration: ', i)
 
-        # Selection les meilleurs chromosomes (elitisme), puis crossover et mutation
-        # pour passer a la generation suivante
+        # fitness de la population
+        #liste decroissante de tuples: [ (fitness, index), ... ]
+        populationScores = chromosome.popFitness(population, calc_fitness,n)
+
+        #elitisme
+        print('\n FLAG elitisme')
         newPopulation = [ population[populationScores[i][1]] for i in range(int(pop_size * elit_rate)) ]
-        
+
         #reproduction
+        print('\n FLAG reproduction')
         for i in range(len(newPopulation)-1):
             new_chromo = chromosome.reproduce(newPopulation[i], newPopulation[i+1])
             newPopulation.append(new_chromo)
 
+
         #crossover
+        print('\n FLAG crossover')
         cross_size = int(cross_rate * pop_size) 
         for i in range(cross_size):
             # deux parents selectionnes par roulette de selection basee sur les ranksProbabilities
@@ -56,7 +55,9 @@ def geneticAlgorithm(pop_size, elit_rate, cross_rate,mut_rate, calc_fitness,n, m
             newPopulation[i1]=tmp_1
             newPopulation[i2]=tmp_2
 
+
         #mutation
+        print('\n FLAG mutation')
         mut_size = int(mut_rate * pop_size)
         for i in range(mut_size):
             i_mutant= random.randint(0,len(newPopulation)-1)   
@@ -66,16 +67,26 @@ def geneticAlgorithm(pop_size, elit_rate, cross_rate,mut_rate, calc_fitness,n, m
         newPopulationScores = chromosome.popFitness(newPopulation, calc_fitness,n)
         solution.append(newPopulation[newPopulationScores[0][1]])
 
-        population = newPopulation
-        print('Taille de la population: ', len(population))
+        
+        print('\n Taille de la population: ', len(newPopulation))
+        if i>taille_file:
+            file.pop(0)
+            file.append(newPopulationScores[0][0]) #la file contient les fitness des 'taille_file' derniers meilleurs chromosomes
+            if max(file)-min(file)<marge:
+                return newPopulation[newPopulationScores[0][1]]
+
+
+        population = newPopulation  
         i+=1
-    
+    """
     #pas de solution satisfaisante trouvée
     sol_fitness = []
     for i in range(len(solution)):
         fit_tmp =calc_fitness(solution[i],n)
         sol_fitness.append(fit_tmp)
-    print('Meilleure fitness atteinte: \n', max(sol_fitness))
+    print('\n Meilleure fitness atteinte: \n', max(sol_fitness))
+    """
+
 
 def decrypt_string(chiffre_txt, chromo_dict):
     # Dechiffrer le texte en utilisant le chromosome fourni
